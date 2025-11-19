@@ -8,12 +8,10 @@
     "start": "node dist/index.js"
   },
   "dependencies": {
-    "sqlite3": "^5.1.7",
-    "ws": "^8.18.0"
+    "sqlite3": "^5.1.7"
   },
   "devDependencies": {
     "@types/node": "^22.9.0",
-    "@types/ws": "^8.5.12",
     "typescript": "^5.5.4",
     "tsx": "^4.19.1"
   }

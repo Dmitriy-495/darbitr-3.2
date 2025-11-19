@@ -1,79 +1,48 @@
-import { Database } from './database/db';
-import { SetupWizard } from './modules/setup-wizard';
+import { DB } from './database/connection.js';
+import { ConfigLoader } from './config/loader.js';
 
-class DTArbitr {
-    private running = false;
+console.log('🚀 DT ARBITR 3.2 - Apache/Nginx Symlinks');
 
-    async initialize() {
-        console.log('🚀 Запуск...');
-        
-        const wizard = new SetupWizard();
-        const { mode } = await wizard.start();
-        
-        if (await this.isMaintenanceTime()) {
-            console.log('⏸️ Техперерыв 03:00-04:00 МСК');
-            process.exit(0);
-        }
+let running = true;
 
-        await this.startTrading(mode);
+// 🛑 Выход
+process.on('SIGINT', () => {
+    console.log('\n🛑 Выход');
+    running = false;
+    DB.close();
+    process.exit(0);
+});
+
+// ♻️ Главный цикл
+async function main() {
+    // 🎯 АКТИВИРУЕМ БИРЖИ И ПАРЫ ПРИ ПЕРВОМ ЗАПУСКЕ
+    const availableExchanges = ConfigLoader.loadAvailableExchanges();
+    if (availableExchanges.length > 0 && ConfigLoader.loadEnabledExchanges().length === 0) {
+        console.log('🔧 Первая настройка...');
+        ConfigLoader.enableExchange('binance');
+        ConfigLoader.enableActive('btcusdt');
     }
 
-    private async isMaintenanceTime(): Promise<boolean> {
-        try {
-            const config = await Database.getConfig<any>('daily_maintenance');
-            if (!config) return false;
+    // 🎯 ЗАГРУЗКА АКТИВНЫХ КОНФИГОВ
+    const exchanges = ConfigLoader.loadEnabledExchanges();
+    const actives = ConfigLoader.loadEnabledActives();
+    
+    console.log(`✅ Биржи: ${exchanges.map(e => e.code).join(', ')}`);
+    console.log(`✅ Пары: ${actives.map(a => a.symbol).join(', ')}`);
+    console.log('🎯 Используются симлинки из *_enabled папок\n');
+    
+    const battle = parseInt(await DB.get('battle_time')) || 5000;
+    const break_ = parseInt(await DB.get('break_time')) || 1000;
 
-            const now = new Date();
-            const msk = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/Moscow' }));
-            const current = msk.getHours() * 60 + msk.getMinutes();
-            
-            const [startH, startM] = config.start.split(':').map(Number);
-            const [endH, endM] = config.end.split(':').map(Number);
-            
-            return current >= startH * 60 + startM && current < endH * 60 + endM;
-        } catch {
-            return false;
-        }
-    }
-
-    private async startTrading(mode: string): Promise<void> {
-        console.log(`\n🎯 ${mode === 'test' ? '📊 TEST MODE' : '⚡ BATTLE MODE'}`);
-        
-        this.running = true;
-        const battle = 5000;  // 5сек для теста
-        const break_ = 1000;  // 1сек для теста
-        
-        for (let cycle = 1; cycle <= 3 && this.running; cycle++) {
-            console.log(`\n♻️ Цикл ${cycle}: Бой ${battle}мс`);
-            await this.delay(battle);
-            console.log(`💾 Синх ${break_}мс`);
-            await this.delay(break_);
-        }
-        
-        console.log('✅ Завершено');
-        await this.shutdown();
-    }
-
-    private async delay(ms: number): Promise<void> {
-        return new Promise(resolve => {
-            if (!this.running) return;
-            setTimeout(resolve, ms);
-        });
-    }
-
-    private async shutdown(): Promise<void> {
-        this.running = false;
-        await Database.close();
-        process.exit(0);
+    let cycle = 0;
+    while (running) {
+        cycle++;
+        console.log(`♻️ ${cycle}: Мониторинг ${actives.length} пар`);
+        await new Promise(r => setTimeout(r, battle));
+        if (!running) break;
+        console.log(`💾 Анализ арбитража`);
+        await new Promise(r => setTimeout(r, break_));
     }
 }
 
-// 🚀 ЗАПУСК
-new DTArbitr().initialize();
-
-// 🛑 CTRL+C
-process.on('SIGINT', async () => {
-    console.log('\n🛑 Выход...');
-    await Database.close();
-    process.exit(0);
-});
+main();

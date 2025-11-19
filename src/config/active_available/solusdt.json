@@ -1,0 +1,9 @@
+{
+  "symbol": "SOLUSDT",
+  "base": "SOL",
+  "quote": "USDT",
+  "exchanges": ["binance", "okx", "bybit"],
+  "volume_24h": 500000000,
+  "volatility": 6.5,
+  "base_price": 120.50
+}

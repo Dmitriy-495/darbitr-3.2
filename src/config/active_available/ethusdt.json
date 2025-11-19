@@ -1,0 +1,8 @@
+{
+  "symbol": "ETHUSDT",
+  "base": "ETH", 
+  "quote": "USDT",
+  "exchanges": ["binance", "okx", "bybit"],
+  "volume_24h": 800000000,
+  "volatility": 3.8
+}
