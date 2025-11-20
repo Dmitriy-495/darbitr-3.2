@@ -1,0 +1,11 @@
+{
+  "symbol": "BTCUSDT",
+  "base": "BTC",
+  "quote": "USDT",
+  "exchanges": ["binance", "okx", "bybit", "kucoin", "htx"],
+  "volume_24h": 1500000000,
+  "volatility": 4.2,
+  "base_price": 50000,
+  "min_profit": 0.8,
+  "max_spread": 1.2
+}

@@ -1,0 +1,9 @@
+{
+  "name": "HTX",
+  "code": "htx",
+  "ws_url": "wss://api-aws.huobi.pro/ws",
+  "rest_url": "https://api.huobi.pro",
+  "read_only": false,
+  "weight": 5,
+  "enabled": false
+}

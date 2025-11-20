@@ -1,0 +1,9 @@
+{
+  "name": "KuCoin",
+  "code": "kucoin",
+  "ws_url": "wss://ws-api.kucoin.com/endpoint",
+  "rest_url": "https://api.kucoin.com",
+  "read_only": false, 
+  "weight": 6,
+  "enabled": false
+}

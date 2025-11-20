@@ -4,4 +4,4 @@ dist/
 *.log
 .DS_Store
 .cache
-src/database/*.db    # 🎯 ИГНОРИРУЕМ ФАЙЛЫ БАЗ В ПАПКЕ database/
+src/database/*.db    # 🎯 ИГНОРИРУЕМ ВСЕ ФАЙЛЫ БАЗ В ПАПКЕ database/

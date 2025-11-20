@@ -1,9 +1,0 @@
-{
-  "symbol": "ADAUSDT",
-  "base": "ADA",
-  "quote": "USDT",
-  "exchanges": ["binance", "okx"],
-  "volume_24h": 150000000,
-  "volatility": 5.2,
-  "base_price": 0.48
-}

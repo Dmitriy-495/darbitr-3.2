@@ -9,25 +9,21 @@ export class Main {
     }
 
     private async mainLoop() {
+        const exchanges = ConfigLoader.loadEnabledExchanges();
+        const actives = ConfigLoader.loadEnabledActives();
+
+        console.log(`📊 Мониторинг ${actives.length} пар на ${exchanges.length} биржах`);
+        
         let cycle = 0;
         while (this.running) {
             cycle++;
             console.log(`\n♻️ Цикл ${cycle} - ${new Date().toLocaleTimeString()}`);
             
-            // 🎯 ДИНАМИЧЕСКАЯ ЗАГРУЗКА КОНФИГОВ КАЖДЫЙ ЦИКЛ
-            const exchanges = ConfigLoader.loadEnabledExchanges();
-            const actives = ConfigLoader.loadEnabledActives();
+            // 🎯 ВЫВОД ЦЕН
+            this.printPrices(actives, exchanges);
             
-            console.log(`📊 Мониторинг ${actives.length} пар на ${exchanges.length} биржах`);
-            
-            if (actives.length > 0 && exchanges.length > 0) {
-                this.printPrices(actives, exchanges);
-            } else {
-                console.log('⚠️ Нет активных пар или бирж. Проверьте папки *_enabled');
-            }
-            
-            // ⏱️ ОЖИДАНИЕ 10 СЕКУНД
-            await this.delay(10000);
+            // ⏱️ ОЖИДАНИЕ 5 СЕКУНД
+            await this.delay(5000);
         }
     }
 
@@ -36,7 +32,6 @@ export class Main {
             console.log(`\n${active.symbol}:`);
             
             for (const exchange of exchanges) {
-                // 🎯 ГЕНЕРАЦИЯ ЦЕНЫ НА ОСНОВЕ ДАННЫХ ИЗ КОНФИГОВ
                 const price = this.generatePrice(active, exchange);
                 const change = (Math.random() * 4 - 2).toFixed(2);
                 
@@ -46,29 +41,21 @@ export class Main {
     }
 
     private generatePrice(active: any, exchange: any): string {
-        // 🎯 БАЗОВАЯ ЦЕНА ИЗ КОНФИГА АКТИВА (ЕСЛИ ЕСТЬ)
         const basePrice = active.base_price || this.getDefaultBasePrice(active.symbol);
-        
-        // 🎯 КОРРЕКЦИЯ НА ОСНОВЕ ВЕСА БИРЖИ И ВОЛАТИЛЬНОСТИ
-        const exchangeWeight = exchange.weight || 1.0;
         const volatility = active.volatility || 2.0;
+        const exchangeWeight = exchange.weight || 1.0;
         
-        const correction = exchangeWeight + (Math.random() - 0.5) * (volatility / 100);
-        const price = basePrice * correction;
-        
+        const price = basePrice * (exchangeWeight + (Math.random() - 0.5) * (volatility / 100));
         return price.toFixed(2);
     }
 
     private getDefaultBasePrice(symbol: string): number {
-        // 🎯 РЕЗЕРВНЫЕ ЦЕНЫ ТОЛЬКО ДЛЯ ТЕСТА
         const defaults: { [key: string]: number } = {
             'BTCUSDT': 50000,
             'ETHUSDT': 3000,
-            'SOLUSDT': 100,
-            'ADAUSDT': 0.5
+            'SOLUSDT': 100
         };
-        
-        return defaults[symbol] || 10 + Math.random() * 100;
+        return defaults[symbol] || 10;
     }
 
     private delay(ms: number): Promise<void> {
@@ -77,6 +64,6 @@ export class Main {
 
     stop() {
         this.running = false;
-        console.log('🛑 Главный модуль остановлен');
+        console.log('🛑 Остановлен');
     }
 }

@@ -1,0 +1,11 @@
+{
+  "symbol": "DOTUSDT",
+  "base": "DOT",
+  "quote": "USDT", 
+  "exchanges": ["binance", "okx", "bybit"],
+  "volume_24h": 80000000,
+  "volatility": 4.8,
+  "base_price": 7.2,
+  "min_profit": 1.0,
+  "max_spread": 1.8
+}

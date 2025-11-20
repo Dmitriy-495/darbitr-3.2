@@ -1,8 +1,9 @@
 {
-  "name": "OKX", 
-  "code": "okx",
+  "name": "OKX",
+  "code": "okx", 
   "ws_url": "wss://ws.okx.com:8443/ws/v5/public",
   "rest_url": "https://www.okx.com",
   "read_only": false,
-  "weight": 8
+  "weight": 8,
+  "enabled": false
 }

@@ -11,7 +11,8 @@ export class DB {
 
     static async connect(): Promise<sqlite3.Database> {
         if (!this.db) {
-            const dbPath = path.join(__dirname, 'dt_arbitr.db');
+            // 🎯 БАЗА В ПАПКЕ database/database.db
+            const dbPath = path.join(__dirname, 'database.db');
             this.db = new sqlite3.Database(dbPath);
             
             // 🎯 МИНИМАЛЬНАЯ СХЕМА
@@ -27,9 +28,10 @@ export class DB {
             const row: any = await this.get("SELECT COUNT(*) as count FROM config");
             if (row.count === 0) {
                 await run(`INSERT INTO config (key, value) VALUES 
-                    ('battle_time', '5000'),
-                    ('break_time', '1000')
+                    ('battle_time', '10000'),
+                    ('break_time', '2000')
                 `);
+                console.log('✅ База database.db инициализирована');
             }
         }
         return this.db;

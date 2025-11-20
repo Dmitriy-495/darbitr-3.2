@@ -1,8 +1,0 @@
-{
-  "symbol": "BTCUSDT",
-  "base": "BTC",
-  "quote": "USDT",
-  "exchanges": ["binance", "okx", "bybit"],
-  "volume_24h": 1500000000,
-  "volatility": 4.2
-}

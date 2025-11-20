@@ -4,5 +4,6 @@
   "ws_url": "wss://stream.binance.com:9443/ws",
   "rest_url": "https://api.binance.com",
   "read_only": true,
-  "weight": 10
+  "weight": 10,
+  "enabled": true
 }
