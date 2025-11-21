@@ -1,13 +1,4 @@
-import { Main } from './main.js';
+import { WSManager } from "./ws";
 
-console.log('🚀 DT ARBITR 3.2 - Запуск...');
-
-// 🛑 Безопасный выход
-process.on('SIGINT', () => {
-    console.log('\n🛑 Выход...');
-    process.exit(0);
-});
-
-// 🚀 ЗАПУСК
-const main = new Main();
-main.start();
+const ws = new WSManager();
+ws.start();

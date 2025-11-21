@@ -2,113 +2,101 @@ import fs from 'fs';
 import path from 'path';
 
 export class ConfigLoader {
-    // 🎯 ЗАГРУЗКА ВКЛЮЧЕННЫХ БИРЖ
-    static loadEnabledExchanges(): any[] {
-        return this.loadConfigs('./src/config/enabled/exchange');
-    }
+  private configPath: string;
 
-    // 🎯 ЗАГРУЗКА ВКЛЮЧЕННЫХ АКТИВОВ
-    static loadEnabledActives(): any[] {
-        return this.loadConfigs('./src/config/enabled/active');
-    }
+  constructor() {
+    this.configPath = path.join(__dirname);
+  }
 
-    // 🎯 ДОСТУПНЫЕ БИРЖИ
-    static loadAvailableExchanges(): any[] {
-        return this.loadConfigs('./src/config/available/exchange');
-    }
+  getEnabledExchanges(): any[] {
+    const exchanges: any[] = [];
+    const enabledPath = path.join(this.configPath, 'enabled', 'exchange');
+    
+    try {
+      if (!fs.existsSync(enabledPath)) {
+        console.log('📁 Создана папка enabled/exchange');
+        fs.mkdirSync(enabledPath, { recursive: true });
+        return [];
+      }
 
-    // 🎯 ДОСТУПНЫЕ АКТИВЫ
-    static loadAvailableActives(): any[] {
-        return this.loadConfigs('./src/config/available/active');
-    }
-
-    // 🎯 ОБЩИЙ МЕТОД ЗАГРУЗКИ КОНФИГОВ
-    private static loadConfigs(dir: string): any[] {
-        const configs = [];
-        
-        if (fs.existsSync(dir)) {
-            const files = fs.readdirSync(dir);
-            for (const file of files) {
-                if (file.endsWith('.json')) {
-                    try {
-                        const filePath = path.join(dir, file);
-                        const config = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-                        configs.push(config);
-                    } catch (error: any) {
-                        console.log(`⚠️ Ошибка загрузки ${file}:`, error.message);
-                    }
-                }
-            }
+      const files = fs.readdirSync(enabledPath);
+      
+      files.forEach(file => {
+        if (file.endsWith('.json')) {
+          const config = this.loadConfig(path.join(enabledPath, file));
+          if (config) {
+            exchanges.push(config);
+          }
         }
-        
-        return configs;
+      });
+    } catch (error) {
+      console.error('❌ Ошибка загрузки бирж:', error);
     }
+    
+    console.log(`✅ Загружено ${exchanges.length} бирж`);
+    return exchanges;
+  }
 
-    // 🎯 АКТИВАЦИЯ БИРЖИ
-    static enableExchange(code: string): boolean {
-        return this.createSymlink(
-            `../available/exchange/${code}.json`,
-            `./src/config/enabled/exchange/${code}.json`
-        );
-    }
+  getEnabledActives(): any[] {
+    const actives: any[] = [];
+    const enabledPath = path.join(this.configPath, 'enabled', 'active');
+    
+    try {
+      if (!fs.existsSync(enabledPath)) {
+        console.log('📁 Создана папка enabled/active');
+        fs.mkdirSync(enabledPath, { recursive: true });
+        return [];
+      }
 
-    // 🎯 АКТИВАЦИЯ АКТИВА
-    static enableActive(symbol: string): boolean {
-        return this.createSymlink(
-            `../available/active/${symbol}.json`,
-            `./src/config/enabled/active/${symbol}.json`
-        );
-    }
-
-    // 🎯 ДЕАКТИВАЦИЯ БИРЖИ
-    static disableExchange(code: string): boolean {
-        return this.removeSymlink(`./src/config/enabled/exchange/${code}.json`);
-    }
-
-    // 🎯 ДЕАКТИВАЦИЯ АКТИВА
-    static disableActive(symbol: string): boolean {
-        return this.removeSymlink(`./src/config/enabled/active/${symbol}.json`);
-    }
-
-    // 🎯 СОЗДАНИЕ СИМЛИНКА
-    private static createSymlink(source: string, target: string): boolean {
-        const sourcePath = source.replace('../', './src/config/');
-        if (!fs.existsSync(sourcePath)) {
-            console.log(`❌ Файл не найден: ${sourcePath}`);
-            return false;
+      const files = fs.readdirSync(enabledPath);
+      
+      files.forEach(file => {
+        if (file.endsWith('.json')) {
+          const config = this.loadConfig(path.join(enabledPath, file));
+          if (config) {
+            actives.push(config);
+          }
         }
-        
-        try {
-            // Создаем папку если не существует
-            const targetDir = path.dirname(target);
-            if (!fs.existsSync(targetDir)) {
-                fs.mkdirSync(targetDir, { recursive: true });
-            }
-            
-            if (fs.existsSync(target)) {
-                fs.unlinkSync(target);
-            }
-            fs.symlinkSync(source, target);
-            console.log(`✅ Симлинк создан: ${target} -> ${source}`);
-            return true;
-        } catch (error: any) {
-            console.log(`❌ Ошибка создания симлинка:`, error.message);
-            return false;
-        }
+      });
+    } catch (error) {
+      console.error('❌ Ошибка загрузки активов:', error);
     }
+    
+    console.log(`✅ Загружено ${actives.length} активов`);
+    return actives;
+  }
 
-    // 🎯 УДАЛЕНИЕ СИМЛИНКА
-    private static removeSymlink(target: string): boolean {
-        try {
-            if (fs.existsSync(target)) {
-                fs.unlinkSync(target);
-                console.log(`✅ Симлинк удален: ${target}`);
-                return true;
-            }
-            return false;
-        } catch (error: any) {
-            console.log(`❌ Ошибка удаления симлинка:`, error.message);
-            return false;
-        }
+  private loadConfig(filePath: string): any {
+    try {
+      const data = fs.readFileSync(filePath, 'utf8');
+      const config = JSON.parse(data);
+      
+      // Базовая валидация
+      if (!config.name || !config.code) {
+        console.warn(`⚠️ Невалидный конфиг: ${filePath}`);
+        return null;
+      }
+      
+      return config;
+    } catch (error) {
+      console.error(`❌ Ошибка загрузки конфига ${filePath}:`, error);
+      return null;
     }
+  }
+
+  // Вспомогательный метод для создания симлинков
+  createSymlink(targetPath: string, linkPath: string): boolean {
+    try {
+      if (fs.existsSync(linkPath)) {
+        fs.unlinkSync(linkPath);
+      }
+      
+      fs.symlinkSync(targetPath, linkPath);
+      console.log(`✅ Создан симлинк: ${linkPath} -> ${targetPath}`);
+      return true;
+    } catch (error) {
+      console.error(`❌ Ошибка создания симлинка:`, error);
+      return false;
+    }
+  }
 }
